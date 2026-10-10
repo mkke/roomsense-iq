@@ -1827,7 +1827,7 @@ void ha_mqtt_start()
 //	xTaskCreatePinnedToCore(task_settings_publish, "task_settings_publish", 20 * 1024, NULL, MQTT_APP_TASK_PRIORITY, NULL, MQTT_APP_TASK_CORE_ID);
 	xTaskCreatePinnedToCore(task_occupancy_publish, "task_occupancy_publish", OCCUPANCY_PUBLISH_TASK_STACK_SIZE, NULL, OCCUPANCY_PUBLISH_TASK_PRIORITY, NULL,
 			OCCUPANCY_PUBLISH_TASK_CORE_ID);
-	xTaskCreatePinnedToCore(task_movement_direction_publish, "task_movement_direction_publish", 3 * 1024, NULL, MQTT_APP_TASK_PRIORITY, NULL,
+	xTaskCreatePinnedToCore(task_movement_direction_publish, "task_movement_direction_publish", 6 * 1024, NULL, MQTT_APP_TASK_PRIORITY, NULL,
 			MQTT_APP_TASK_CORE_ID);
 	xTaskCreatePinnedToCore(task_distance_publish, "task_distance_publish", 6 * 1024, NULL, MQTT_APP_TASK_PRIORITY, NULL, MQTT_APP_TASK_CORE_ID);
 	xTaskCreatePinnedToCore(task_climate_sense_publish, "task_climate_sense_publish", 5 * 1024, NULL, MQTT_APP_TASK_PRIORITY, NULL, MQTT_APP_TASK_CORE_ID);
@@ -1835,7 +1835,7 @@ void ha_mqtt_start()
 	xTaskCreatePinnedToCore(task_pir_publish, "task_pir_publish", MQTT_PIR_APP_TASK_STACK_SIZE, NULL, MQTT_PIR_APP_TASK_PRIORITY, NULL,
 			MQTT_PIR_APP_TASK_CORE_ID);
 
-	xTaskCreatePinnedToCore(task_climatesense_alarm_publish, "task_climatesense_alarm_publish", 3 * 1024, NULL, MQTT_PIR_APP_TASK_PRIORITY,
+	xTaskCreatePinnedToCore(task_climatesense_alarm_publish, "task_climatesense_alarm_publish", 6 * 1024, NULL, MQTT_PIR_APP_TASK_PRIORITY,
 			NULL, MQTT_PIR_APP_TASK_CORE_ID);
 	xTaskCreatePinnedToCore(task_occupancy_state, "task_occupancy_state", OCCUPANCY_STATE_TASK_STACK_SIZE, NULL, OCCUPANCY_STATE_TASK_PRIORITY,
 			&task_occupancy_state_handle, OCCUPANCY_STATE_TASK_CORE_ID);
