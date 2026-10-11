@@ -2,8 +2,8 @@
 
 Fork of `roomsense/roomsense-iq`, the ESP-IDF firmware of the RoomSense
 IQ room sensor (ESP32-S3, 8 MB flash, two 3 MB OTA app slots). The two
-units in service (bedroom `9038`, living room `D95C`) feed
-weather-backend over MQTT.
+units in service, bedroom `9038` (`roomsense2.mallorn.de`) and living
+room `D95C` (`roomsense1.mallorn.de`), feed weather-backend over MQTT.
 
 Remotes: `origin` is the fork `git@github.com:mkke/roomsense-iq.git`,
 `upstream` is the vendor repository. `main` tracks `origin/main`.
@@ -22,7 +22,14 @@ docker run --rm -v "$HOME/git/roomsense-firmware:/project" -w /project/firmware 
 
 The app image is `firmware/build/firmware.bin`; it goes into `ota_0` at
 `0x10000`. Secure boot, flash encryption and app rollback are off, so a
-self-built image boots and a failed one is not rolled back.
+self-built image boots and a failed one is not rolled back. Rollback is a
+bootloader setting, and an update over the air does not replace the
+bootloader.
+
+The app version is `git describe --dirty` of the tree the image was built
+from; `firmware/CMakeLists.txt` makes a build configure again whenever a
+tracked file, the index or the branch tip has changed. The container's
+clock is UTC, so build times in the image are UTC.
 
 ## Dev board
 
@@ -42,6 +49,9 @@ Flash the app slot:
 ```bash
 cd ~/git/roomsense-firmware/firmware/build && ~/.venvs/esptool/bin/esptool --chip esp32s3 --port /dev/cu.usbserial-10 -b 115200 write-flash --flash-mode dio --flash-freq 80m --flash-size 8MB 0x10000 firmware.bin
 ```
+
+After a flash the board stays in reset until the monitor below opens the
+port with RTS and DTR released.
 
 Serial log (`Ctrl-T Ctrl-R` twice resets the board, `Ctrl-]` quits; the
 monitor holds the port):
@@ -63,10 +73,18 @@ monitor holds the port):
   announced and confirmed first. ap4 (Qualcomm):
   `hostapd_cli -i ath3 disassociate <mac>`. ap3 (MediaTek, Dropbear)
   needs `-o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa`.
+- **Update over the air:** upload `firmware/build/firmware.bin` under
+  "Firmware Update" on the unit's web page; the unit restarts into the
+  other app slot.
 - **Firmware version of a unit:** `curl -X POST -d ota_update_status http://<ip>/OTAstatus`
-  returns the running image's `version` (`git describe` of the tree it
-  was built from), its build time, and `elf_sha256`, the first 8 hex
-  digits of the ELF's SHA-256.
+  returns the running image's `version`, its build time, and
+  `elf_sha256`, the first 8 hex digits of the ELF's SHA-256. Compare
+  `elf_sha256` with `shasum -a 256 firmware/build/firmware.elf | cut -c1-8`:
+  the build time changes only when the version string does, so two
+  builds of one dirty tree report the same time.
+- **Production broker:** `nuc.mallorn.de:1883` accepts anonymous
+  subscriptions. `mosquitto_sub -R` drops the retained copies the broker
+  sends on subscribe, so it shows only fresh publishes.
 
 ## Firmware behaviour to know
 
@@ -81,6 +99,8 @@ monitor holds the port):
 - The unit restarts itself on an `MQTT_EVENT_ERROR` with socket errno 11
   or 23, and after 600 s without an MQTT connection when its MQTT
   credentials came from flash.
+- Climate values (temperature, humidity, dew point, CO2, VOC, PM, CO) are
+  published every 5 minutes, the first about 30 s after boot.
 - Published temperature and humidity come from the SCD40
   (`main/climatesense.c`), with a 12.1 C offset stored in the sensor's
   EEPROM. Each start of its periodic measurement makes the temperature
