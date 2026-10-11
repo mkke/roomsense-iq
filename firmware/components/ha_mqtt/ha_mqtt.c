@@ -1570,8 +1570,8 @@ static void mqtt_app_task(void *pvParameters)
 			case MQTT_APP_MSG_CONNECTING_FROM_HTTP_SERVER:
 
 				ESP_LOGI(TAG, "MQTT_APP_MSG_CONNECTING_FROM_HTTP_SERVER");
-				ESP_LOGI(TAG, "mqtt-host: %s mqtt-port: %s mqtt-user: %s mqtt-pass:%s", mqtt_credentials->mqtt_host, mqtt_credentials->mqtt_port,
-						mqtt_credentials->mqtt_username, mqtt_credentials->mqtt_password);
+				ESP_LOGI(TAG, "mqtt-host: %s mqtt-port: %s mqtt-user: %s", mqtt_credentials->mqtt_host, mqtt_credentials->mqtt_port,
+						mqtt_credentials->mqtt_username);
 				xEventGroupSetBits(mqtt_app_event_group, MQTT_APP_CONNECTING_FROM_HTTP_SERVER_BIT);
 				roomsense_iq_shared.rgb_led_state = MQTT_DISCONNECTED;
 				xEventGroupSetBits(led_event_group, RGB_LED_BIT);

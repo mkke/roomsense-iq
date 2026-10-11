@@ -510,7 +510,7 @@ static esp_err_t http_server_wifi_connect_json_handler(httpd_req_t *req)
 		pass_str = malloc(len_pass);
 		if (httpd_req_get_hdr_value_str(req, "my-connect-pwd", pass_str, len_pass) == ESP_OK)
 		{
-			ESP_LOGI(TAG, "http_server_wifi_connect_json_handler: Found header => my-connect-pwd: %s", pass_str);
+			ESP_LOGI(TAG, "http_server_wifi_connect_json_handler: Found header => my-connect-pwd");
 		}
 	}
 
@@ -582,7 +582,7 @@ static esp_err_t http_server_mqtt_connect_json_handler(httpd_req_t *req)
 		pass_str = malloc(len_pass);
 		if (httpd_req_get_hdr_value_str(req, "my-connect-mqtt-pwd", pass_str, len_pass) == ESP_OK)
 		{
-			ESP_LOGI(TAG, "http_server_mqtt_connect_json_handler: Found header => my-connect-mqtt-pwd: %s", pass_str);
+			ESP_LOGI(TAG, "http_server_mqtt_connect_json_handler: Found header => my-connect-mqtt-pwd");
 		}
 	}
 

@@ -139,14 +139,14 @@ bool app_nvs_load_ap_key(void)
 			free(ap_key_buff);
 			printf("app_nvs_load_ap_key: (%s) no access point key found in NVS\n", esp_err_to_name(esp_err));
 			memcpy(roomsense_iq_shared.ap_key, "password", strlen("password"));
-			printf("------> app_nvs_load_ap_key: %s\n", roomsense_iq_shared.ap_key);
+			printf("------> app_nvs_load_ap_key: using the default key\n");
 			nvs_close(handle);
 			return false;
 		}
 		memcpy(roomsense_iq_shared.ap_key, ap_key_buff, ap_key_size);
 		nvs_close(handle);
 
-		printf("------> ap_key_buff %s app_nvs_load_ap_key: %s ap_key_size %d\n", ap_key_buff, roomsense_iq_shared.ap_key, ap_key_size);
+		printf("------> app_nvs_load_ap_key: ap_key_size %d\n", ap_key_size);
 
 		free(ap_key_buff);
 		return true;
@@ -199,7 +199,7 @@ esp_err_t app_nvs_save_sta_creds(void)
 			return esp_err;
 		}
 		nvs_close(handle);
-		ESP_LOGI(TAG, "app_nvs_save_sta_creds: wrote wifi_sta_config: Station SSID: %s Password: %s", wifi_sta_config->sta.ssid, wifi_sta_config->sta.password);
+		ESP_LOGI(TAG, "app_nvs_save_sta_creds: wrote wifi_sta_config: Station SSID: %s", wifi_sta_config->sta.ssid);
 	}
 
 	printf("app_nvs_save_sta_creds: returned ESP_OK\n");
@@ -253,7 +253,7 @@ bool app_nvs_load_sta_creds(void)
 		free(wifi_config_buff);
 		nvs_close(handle);
 
-		printf("app_nvs_load_sta_creds: SSID: %s Password: %s\n", wifi_sta_config->sta.ssid, wifi_sta_config->sta.password);
+		printf("app_nvs_load_sta_creds: SSID: %s\n", wifi_sta_config->sta.ssid);
 		return wifi_sta_config->sta.ssid[0] != '\0';
 	}
 	else
@@ -354,8 +354,8 @@ esp_err_t app_nvs_save_mqtt_creds(void)
 			return esp_err;
 		}
 		nvs_close(handle);
-		ESP_LOGI(TAG, "app_nvs_save_mqtt_creds: wrote mqtt_credentials: MQTT Host %s Port %s Username: %s Password: %s", mqtt_credentials->mqtt_host,
-				mqtt_credentials->mqtt_port, mqtt_credentials->mqtt_username, mqtt_credentials->mqtt_password);
+		ESP_LOGI(TAG, "app_nvs_save_mqtt_creds: wrote mqtt_credentials: MQTT Host %s Port %s Username: %s", mqtt_credentials->mqtt_host,
+				mqtt_credentials->mqtt_port, mqtt_credentials->mqtt_username);
 	}
 
 	printf("app_nvs_save_mqtt_creds: returned ESP_OK\n");
@@ -431,8 +431,8 @@ bool app_nvs_load_mqtt_creds(void)
 		free(mqtt_config_buff);
 		nvs_close(handle);
 
-		printf("app_nvs_load_mqtt_creds: Host:%s, Port:%s Username:%s Password:%s\n", mqtt_credentials->mqtt_host, mqtt_credentials->mqtt_port,
-				mqtt_credentials->mqtt_username, mqtt_credentials->mqtt_password);
+		printf("app_nvs_load_mqtt_creds: Host:%s, Port:%s Username:%s\n", mqtt_credentials->mqtt_host, mqtt_credentials->mqtt_port,
+				mqtt_credentials->mqtt_username);
 		return mqtt_credentials->mqtt_username[0] != '\0';
 	}
 	else
