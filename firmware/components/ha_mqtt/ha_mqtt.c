@@ -525,11 +525,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 //		esp_mqtt_client_subscribe(event->client, esp_discovery_movement_direction.set_topic, SUBSCRIBE_QOS);
 //		vTaskDelay(5 / portTICK_PERIOD_MS);
 
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_start.status_topic, STATUS_ONLINE, 0, 2, true);
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_read.status_topic, STATUS_ONLINE, 0, 2, true);
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_config.status_topic, STATUS_ONLINE, 0, 2, true);
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_reset.status_topic, STATUS_ONLINE, 0, 2, true);
-
 //		esp_mqtt_client_subscribe(event->client, esp_discovery_number_pir_sensitivity.set_topic, SUBSCRIBE_QOS);
 //		vTaskDelay(5 / portTICK_PERIOD_MS);
 
@@ -542,109 +537,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 //		esp_mqtt_client_subscribe(event->client, esp_discovery_number_timeout.set_topic, SUBSCRIBE_QOS);
 //		vTaskDelay(5 / portTICK_PERIOD_MS);
 
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_start.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_read.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_config.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_button_reset.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_switch_bedsense.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true); //STATE_POWER_ON
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_switch_calsense.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_number_pir_sensitivity.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_number_max_macro_range.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_number_max_micro_range.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_number_timeout.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_distance_detected.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_distance_detected_ft.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_humidity.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_light_sensor.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_temperature.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_temperature_f.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		vTaskDelay(100 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_dew_point.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_co2.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_voc.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_pm1.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_pm25.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_pm10.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_co.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_pir_sensor.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_room_presence.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_movement_direction.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_location.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-//		esp_mqtt_client_publish(event->client, esp_discovery_humidity_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		//vTaskDelay(500 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_co2_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		//vTaskDelay(500 / portTICK_PERIOD_MS);
-//
-//		esp_mqtt_client_publish(event->client, esp_discovery_voc_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(500 / portTICK_PERIOD_MS);
-//
-		esp_mqtt_client_publish(event->client, esp_discovery_pm_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-		esp_mqtt_client_publish(event->client, esp_discovery_co_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-//		esp_mqtt_client_publish(event->client, esp_discovery_mold_risk.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-		//vTaskDelay(500 / portTICK_PERIOD_MS);
-
-//		esp_mqtt_client_publish(event->client, esp_discovery_start_stop_status.status_topic, STATUS_ONLINE, 0, DISCOVERY_QOS, true);
-//		vTaskDelay(5 / portTICK_PERIOD_MS);
-
-
+		esp_mqtt_client_publish(event->client, esp_discovery_availability_topic(), STATUS_ONLINE, 0, DISCOVERY_QOS, true);
 
 		xEventGroupSetBits(mqtt_event_group, CONNECTED_BIT);
 		xEventGroupSetBits(discovery_event_group, CONNECTED_BIT);
@@ -1576,7 +1469,7 @@ static void mqtt_app_task(void *pvParameters)
 	esp_mqtt_client_config_t mqtt_cfg = {
 		.uri = CONFIG_MQTT_URI, /*!< Complete MQTT broker URI */
 		.event_handle = mqtt_event_handler, /*!< handle for MQTT events as a callback in legacy mode */
-		.lwt_topic = esp_discovery_number_max_macro_range.status_topic, /*!< LWT (Last Will and Testament) message topic  to specify the actions to be taken after a client goes offline unexpectedly */
+		.lwt_topic = esp_discovery_availability_topic(), /*!< LWT (Last Will and Testament) message topic  to specify the actions to be taken after a client goes offline unexpectedly */
 		.lwt_msg = STATUS_OFFLINE, /*!< LWT message (NULL by default) */
 		.lwt_qos = 1, /*!< LWT message qos */
 		.lwt_retain = true, /*!< LWT retained message flag */

@@ -3,6 +3,9 @@
 #include "esp_device.h"
 #include "esp_serial.h"
 
+// Device-level availability topic that every discovery config references
+// and the MQTT last will is set on.
+const char *esp_discovery_availability_topic(void);
 
 typedef struct
 {
@@ -15,7 +18,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
     char *unit_of_measurement;
 } esp_discovery_sensor_t;
 
@@ -35,7 +37,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
     char *set_topic;
     char *attributes_topic;
     char *unit_of_measurement;
@@ -58,7 +59,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
 } esp_discovery_pir_sensor_t;
 
 char *esp_discovery_serialize_pir_sensor(esp_discovery_pir_sensor_t *discovery);
@@ -78,7 +78,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
     char *unit_of_measurement;
 } esp_discovery_room_presence_t;
 
@@ -98,7 +97,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
 } esp_discovery_macro_move_sensor_t;
 
 char *esp_discovery_serialize_macro_move_sensor(esp_discovery_macro_move_sensor_t *discovery);
@@ -116,7 +114,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
 } esp_discovery_micro_move_sensor_t;
 
 char *esp_discovery_serialize_micro_move_sensor(esp_discovery_micro_move_sensor_t *discovery);
@@ -134,7 +131,6 @@ typedef struct
     char *unique_id;
     char *discovery_topic;
     char *state_topic;
-    char *status_topic;
     char *unit_of_measurement;
 } esp_discovery_light_sensor_t;
 
@@ -154,7 +150,6 @@ typedef struct
     char *discovery_topic;
     char *state_topic;
     char *set_topic;
-    char *status_topic;
 } esp_discovery_button_t;
 
 char *esp_discovery_serialize_button(esp_discovery_button_t *discovery);
@@ -173,7 +168,6 @@ typedef struct
     char *discovery_topic;
     char *state_topic;
     char *set_topic;
-    char *status_topic;
 } esp_discovery_switch_t;
 
 char *esp_discovery_serialize_switch(esp_discovery_switch_t *discovery);
@@ -193,7 +187,6 @@ typedef struct
     char *discovery_topic;
     char *state_topic;
     char *set_topic;
-    char *status_topic;
     char *attributes_topic;
     char *mode;
     float min;
