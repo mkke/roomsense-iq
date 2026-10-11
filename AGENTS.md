@@ -71,12 +71,14 @@ monitor holds the port):
 - The web page's Wi-Fi connect does not disconnect from the current
   network first, so it hangs on "Connecting..." and stores nothing.
   Press Disconnect, then connect through the unit's own access point.
-- The last will is set on `esp_discovery_number_max_macro_range.status_topic`,
-  not on the availability topics, which therefore never go `offline`.
+- The last will is a retained `offline` on `RoomSense/<id>/status`, the
+  availability topic every discovery config references. The unit
+  publishes `online` there on connect.
 - `MQTT_EVENT_DATA` is ignored and nothing is subscribed, so a unit
   cannot be told to restart over MQTT.
-- The only self-restart is an `MQTT_EVENT_ERROR` with socket errno 11
-  or 23.
+- The unit restarts itself on an `MQTT_EVENT_ERROR` with socket errno 11
+  or 23, and after 600 s without an MQTT connection when its MQTT
+  credentials came from flash.
 - `components/sht30/sht30.c` subtracts correction tables indexed by a
   measurement counter; for about five minutes after power-on the
   temperature reads about 10 C high.
