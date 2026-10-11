@@ -412,11 +412,16 @@ esp_err_t http_server_OTA_update_handler(httpd_req_t *req)
  */
 esp_err_t http_server_OTA_status_handler(httpd_req_t *req)
 {
-	char otaJSON[100];
+	char otaJSON[200];
+	char elf_sha256[9];
+	const esp_app_desc_t *app = esp_ota_get_app_description();
 
 	ESP_LOGI(TAG, "OTAstatus requested");
 
-	sprintf(otaJSON, "{\"ota_update_status\":%d,\"compile_time\":\"%s\",\"compile_date\":\"%s\"}", g_fw_update_status, __TIME__, __DATE__);
+	esp_ota_get_app_elf_sha256(elf_sha256, sizeof(elf_sha256));
+	snprintf(otaJSON, sizeof(otaJSON),
+			"{\"ota_update_status\":%d,\"version\":\"%s\",\"compile_time\":\"%s\",\"compile_date\":\"%s\",\"elf_sha256\":\"%s\"}",
+			g_fw_update_status, app->version, app->time, app->date, elf_sha256);
 
 	httpd_resp_set_type(req, "application/json");
 	httpd_resp_send(req, otaJSON, strlen(otaJSON));
