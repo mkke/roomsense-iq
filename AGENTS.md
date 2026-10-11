@@ -63,8 +63,9 @@ monitor holds the port):
   `hostapd_cli -i ath3 disassociate <mac>`. ap3 (MediaTek, Dropbear)
   needs `-o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa`.
 - **Firmware version of a unit:** `curl -X POST -d ota_update_status http://<ip>/OTAstatus`
-  returns its compile date. The units in service run the official
-  `roomsense-web20240903.bin`.
+  returns the running image's `version` (`git describe` of the tree it
+  was built from), its build time, and `elf_sha256`, the first 8 hex
+  digits of the ELF's SHA-256.
 
 ## Firmware behaviour to know
 
@@ -79,6 +80,9 @@ monitor holds the port):
 - The unit restarts itself on an `MQTT_EVENT_ERROR` with socket errno 11
   or 23, and after 600 s without an MQTT connection when its MQTT
   credentials came from flash.
-- `components/sht30/sht30.c` subtracts correction tables indexed by a
-  measurement counter; for about five minutes after power-on the
-  temperature reads about 10 C high.
+- Published temperature and humidity come from the SCD40
+  (`main/climatesense.c`), with a 12.1 C offset stored in the sensor's
+  EEPROM. Each start of its periodic measurement makes the temperature
+  read about 9 C high, settling with a time constant of about 60 s. A
+  boot leaves a running sensor running, and after a power-up temperature
+  and humidity are held back for 240 s.
