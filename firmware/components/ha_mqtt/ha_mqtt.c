@@ -149,6 +149,79 @@ mqtt_credentials_t *mqtt_credentials = NULL;
 // Queue handle used to manipulate the main queue of events
 static QueueHandle_t mqtt_app_queue_handle;
 
+#define MQTT_WATCHDOG_TIMEOUT_S     600
+#define MQTT_WATCHDOG_PERIOD_US     (60 * 1000000LL)
+
+// esp_timer_get_time() when MQTT went down, 0 while connected. Written by
+// the MQTT client task and read by the esp_timer task; a 64-bit access is
+// two loads on this core, so both sides take the lock.
+static int64_t mqtt_down_since_us = 0;
+static portMUX_TYPE mqtt_watchdog_lock = portMUX_INITIALIZER_UNLOCKED;
+static esp_timer_handle_t mqtt_watchdog_timer = NULL;
+
+static void mqtt_watchdog_set_down_since(int64_t now_us, bool only_if_up)
+{
+	portENTER_CRITICAL(&mqtt_watchdog_lock);
+	if (!only_if_up || mqtt_down_since_us == 0)
+	{
+		mqtt_down_since_us = now_us;
+	}
+	portEXIT_CRITICAL(&mqtt_watchdog_lock);
+}
+
+static void mqtt_watchdog_check(void *arg)
+{
+	int64_t down_since_us;
+
+	portENTER_CRITICAL(&mqtt_watchdog_lock);
+	down_since_us = mqtt_down_since_us;
+	portEXIT_CRITICAL(&mqtt_watchdog_lock);
+
+	if (down_since_us == 0)
+	{
+		return;
+	}
+
+	int64_t down_s = (esp_timer_get_time() - down_since_us) / 1000000;
+	if (down_s < MQTT_WATCHDOG_TIMEOUT_S)
+	{
+		return;
+	}
+
+	ESP_LOGE(TAG, "No MQTT connection for %lld s, restarting", down_s);
+
+	// An esp_timer callback must not block. If the queue is full, the next
+	// check tries again.
+	mqtt_app_queue_message_t msg = { .msgID = MQTT_APP_MSG_RESTART_CPU };
+	xQueueSend(mqtt_app_queue_handle, &msg, 0);
+}
+
+static void mqtt_watchdog_arm(void)
+{
+	mqtt_watchdog_set_down_since(esp_timer_get_time(), false);
+
+	if (mqtt_watchdog_timer == NULL)
+	{
+		const esp_timer_create_args_t args = {
+			.callback = mqtt_watchdog_check,
+			.name = "mqtt_watchdog",
+		};
+		ESP_ERROR_CHECK(esp_timer_create(&args, &mqtt_watchdog_timer));
+	}
+
+	esp_timer_stop(mqtt_watchdog_timer);
+	ESP_ERROR_CHECK(esp_timer_start_periodic(mqtt_watchdog_timer, MQTT_WATCHDOG_PERIOD_US));
+	ESP_LOGI(TAG, "MQTT watchdog armed, restart after %d s without a connection", MQTT_WATCHDOG_TIMEOUT_S);
+}
+
+static void mqtt_watchdog_disarm(void)
+{
+	if (mqtt_watchdog_timer != NULL)
+	{
+		esp_timer_stop(mqtt_watchdog_timer);
+	}
+}
+
 /**
  * MQTT application event group handle and status bits
  */
@@ -429,6 +502,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 	{
 	case MQTT_EVENT_CONNECTED:
 		ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+		mqtt_watchdog_set_down_since(0, false);
 
 //		esp_mqtt_client_subscribe(event->client, esp_discovery_button_start.set_topic, SUBSCRIBE_QOS);
 //		vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -580,6 +654,9 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 		break;
 	case MQTT_EVENT_DISCONNECTED:
 		ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+		// esp-mqtt reports every failed reconnect attempt as a disconnect,
+		// so keep the time of the first one.
+		mqtt_watchdog_set_down_since(esp_timer_get_time(), true);
 
 		xEventGroupClearBits(mqtt_event_group, CONNECTED_BIT);
 		mqtt_app_send_message(MQTT_APP_MSG_DISCONNECTED);
@@ -1546,6 +1623,7 @@ static void mqtt_app_task(void *pvParameters)
 					mqtt_cfg.username = mqtt_credentials->mqtt_username;
 					mqtt_cfg.password = mqtt_credentials->mqtt_password;
 					xEventGroupSetBits(mqtt_app_event_group, MQTT_APP_CONNECTING_USING_SAVED_CREDS_BIT);
+					mqtt_watchdog_arm();
 				}
 				else
 				{
@@ -1673,6 +1751,7 @@ static void mqtt_app_task(void *pvParameters)
 
 					//ESP_ERROR_CHECK(esp_mqtt_client_disconnect(client));
 					app_nvs_clear_mqtt_creds();
+					mqtt_watchdog_disarm();
 
 					mqtt_cfg.username = NULL;
 					mqtt_cfg.password = NULL;
