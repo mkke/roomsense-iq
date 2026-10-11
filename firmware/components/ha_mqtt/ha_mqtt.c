@@ -48,6 +48,10 @@
 #define DIRECTION_QOS 0
 #define PHOTOCELL_QOS 0
 
+// Four time constants of the SCD4x temperature settling after a measurement
+// start, which leaves about 0.2 C of the initial error.
+#define SCD4X_SETTLING_US (240LL * 1000000)
+
 #define CONFIG_MQTT_URI    "mqtt://homeassistant.local:1883"   //"mqtt://10.0.0.203:1883"
 
 #define I2C_BUS 0
@@ -1330,22 +1334,28 @@ void task_climate_sense_publish(void *param)
 		pm10 = roomsense_iq_shared.mpm10_shared.pm10;
 		co = roomsense_iq_shared.tgs5141_shared.co;
 
+		int64_t start_us = roomsense_iq_shared.scd40_shared.measurement_start_us;
+		bool th_settled = start_us == 0 || esp_timer_get_time() - start_us >= SCD4X_SETTLING_US;
+
 		if (!g_ws_pause)
 		{
-			// publish state for temperature
-			sprintf(sensor_data, "%.1f", temperature);
-			esp_mqtt_client_publish(client, esp_discovery_temperature.state_topic, sensor_data, 0, T_H_QOS, true);
+			if (th_settled)
+			{
+				// publish state for temperature
+				sprintf(sensor_data, "%.1f", temperature);
+				esp_mqtt_client_publish(client, esp_discovery_temperature.state_topic, sensor_data, 0, T_H_QOS, true);
 
-			sprintf(sensor_data, "%.1f", temperature_f);
-			esp_mqtt_client_publish(client, esp_discovery_temperature_f.state_topic, sensor_data, 0, T_H_QOS, true);
+				sprintf(sensor_data, "%.1f", temperature_f);
+				esp_mqtt_client_publish(client, esp_discovery_temperature_f.state_topic, sensor_data, 0, T_H_QOS, true);
 
-			// publish state for humidity
-			sprintf(sensor_data, "%.0f", humidity);
-			esp_mqtt_client_publish(client, esp_discovery_humidity.state_topic, sensor_data, 0, T_H_QOS, true);
+				// publish state for humidity
+				sprintf(sensor_data, "%.0f", humidity);
+				esp_mqtt_client_publish(client, esp_discovery_humidity.state_topic, sensor_data, 0, T_H_QOS, true);
 
-			// publish state for dew_point
-			sprintf(sensor_data, "%.0f", dew_point);
-			esp_mqtt_client_publish(client, esp_discovery_dew_point.state_topic, sensor_data, 0, T_H_QOS, true);
+				// publish state for dew_point
+				sprintf(sensor_data, "%.0f", dew_point);
+				esp_mqtt_client_publish(client, esp_discovery_dew_point.state_topic, sensor_data, 0, T_H_QOS, true);
+			}
 
 			// publish state for co2
 			sprintf(sensor_data, "%d", co2);

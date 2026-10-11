@@ -374,7 +374,7 @@ esp_err_t scd4x_perform_factory_reset(i2c_dev_t *dev)
 
 esp_err_t scd4x_reinit(i2c_dev_t *dev)
 {
-	return execute_cmd(dev, CMD_REINIT, 20, NULL, 0, NULL, 0);
+	return execute_cmd(dev, CMD_REINIT, 30, NULL, 0, NULL, 0);
 }
 
 esp_err_t scd4x_measure_single_shot(i2c_dev_t *dev)

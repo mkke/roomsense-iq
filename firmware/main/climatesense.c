@@ -36,6 +36,9 @@
 #define MAX_SGP40_RETRIES    5
 #define ALERT_WARM_UP_PERIOD 10
 
+// For the large vent enclosure the offset is 7 C.
+#define SCD4X_TEMPERATURE_OFFSET 12.1f
+
 static const char *TAG = "climatesense";
 
 static uint16_t alert_counter = 0;
@@ -296,7 +299,6 @@ void climatesense_task(void *pvParamters)
 	int32_t voc_index;
 	uint16_t data = 0;
 	float t_offset;
-	bool malfunction = 0;
 	int sgp40_retry_count = 0;
 	esp_err_t result;
 	uint16_t  calibration_counter = 0;
@@ -343,37 +345,42 @@ void climatesense_task(void *pvParamters)
 	memset(&scd, 0, sizeof(scd));
 	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_init_desc(&scd, 0, CONFIG_EXAMPLE_I2C_MASTER_SDA, CONFIG_EXAMPLE_I2C_MASTER_SCL));
 
-	//2- Stop measurment
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_stop_periodic_measurement(&(scd.i2c_dev)));
+	// An ESP32 restart does not power-cycle the SCD4x, so it may still be in
+	// periodic measurement from before. In that mode it refuses
+	// get_temperature_offset (datasheet table 9), and it is left running:
+	// every measurement start puts minutes of high temperature readings out
+	// (see g_scd40_t.measurement_start_us).
+	if (scd4x_get_temperature_offset(&(scd.i2c_dev), &t_offset) != ESP_OK)
+	{
+		bool data_ready;
+		result = scd4x_get_data_ready_status(&(scd.i2c_dev), &data_ready);
+		roomsense_iq_shared.t_h_co2_connection = (result == ESP_OK);
+		ESP_LOGI(TAG, "SCD4x already measuring, left running");
+	}
+	else
+	{
+		// No perform_self_test here: the SCD4x datasheet (3.10.3) describes
+		// it as an end-of-line test, and it runs for 10 s.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_reinit(&(scd.i2c_dev)));
 
-	//3- Self test
-	result = scd4x_perform_self_test(&(scd.i2c_dev), &malfunction);
-    if (result == ESP_OK)
-    {
-    	roomsense_iq_shared.t_h_co2_connection = true;
-    	ESP_LOGI(TAG, "scd4x_perform_self_test passed successfully.\n");
-    }
-    else
-    {
-    	roomsense_iq_shared.t_h_co2_connection = false;
-    	ESP_LOGI(TAG, "scd4x_perform_self_test failed.\n");
-    }
+		result = ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_get_serial_number(&(scd.i2c_dev), serial, serial + 1, serial + 2));
+		roomsense_iq_shared.t_h_co2_connection = (result == ESP_OK);
+		ESP_LOGI(TAG, "Sensor serial number: 0x%04x%04x%04x", serial[0], serial[1], serial[2]);
 
-    //4 - re-init
-    ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_reinit(&(scd.i2c_dev)));
+		// The offset is stored in the sensor's EEPROM, which reinit loads.
+		// Write it only when it differs: the EEPROM takes 2000 writes.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_get_temperature_offset(&(scd.i2c_dev), &t_offset));
+		if (fabsf(t_offset - SCD4X_TEMPERATURE_OFFSET) > 0.05f)
+		{
+			ESP_LOGI(TAG, "SCD4x offset %.2f C, storing %.2f C", t_offset, SCD4X_TEMPERATURE_OFFSET);
+			ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_set_temperature_offset(&(scd.i2c_dev), SCD4X_TEMPERATURE_OFFSET));
+			ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_persist_settings(&(scd.i2c_dev)));
+			ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_get_temperature_offset(&(scd.i2c_dev), &t_offset));
+		}
 
-    //5- read serial number
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_get_serial_number(&(scd.i2c_dev), serial, serial + 1, serial + 2));
-	ESP_LOGI(TAG, "Sensor serial number: 0x%04x%04x%04x", serial[0], serial[1], serial[2]);
-
-	//6- Apply Temperature offset
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_stop_periodic_measurement(&(scd.i2c_dev)));
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_set_temperature_offset(&(scd.i2c_dev), 12.1)); //offset =7 for large vent enclosure
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_get_temperature_offset(&(scd.i2c_dev), &t_offset));
-
-
-	//7- start periodic measurement
-	ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_start_periodic_measurement(&(scd.i2c_dev)));
+		ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_start_periodic_measurement(&(scd.i2c_dev)));
+		roomsense_iq_shared.scd40_shared.measurement_start_us = esp_timer_get_time();
+	}
 	vTaskDelay(pdMS_TO_TICKS(1000));
 
 	// setup SGP40

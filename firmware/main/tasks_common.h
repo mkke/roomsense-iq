@@ -214,6 +214,10 @@ typedef struct {
 	float    humidity;
 	float    dew_point;
 	uint16_t co2;
+	// esp_timer_get_time() when this boot started periodic measurement, 0
+	// if the sensor was already measuring. After a start the SCD4x reads
+	// temperature about 9 C high, settling with a time constant of 60 s.
+	int64_t  measurement_start_us;
 } g_scd40_t;
 
 typedef struct {
