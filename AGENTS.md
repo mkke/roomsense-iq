@@ -8,8 +8,9 @@ weather-backend over MQTT.
 Remotes: `origin` is the fork `git@github.com:mkke/roomsense-iq.git`,
 `upstream` is the vendor repository. `main` tracks `origin/main`.
 
-Open work is in [TODO.md](TODO.md). No commit is pushed to `origin`
-until every item there is implemented and tested on the dev board.
+Open work goes in `TODO.md`, which exists only while there is some. No
+commit is pushed to `origin` until every item there is implemented and
+tested on the dev board.
 
 ## Build
 
