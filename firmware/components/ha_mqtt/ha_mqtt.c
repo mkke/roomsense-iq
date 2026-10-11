@@ -38,13 +38,13 @@
 #include "hal/ledc_types.h"
 #include "hal/gpio_types.h"
 
-#define PIR_QOS       2
+#define PIR_QOS       1
 #define T_H_QOS       0
 #define DISTANCE_QOS  0
 #define SETTINGS_QOS  0
 #define SUBSCRIBE_QOS 2
-#define DISCOVERY_QOS 2
-#define OCCUPANCY_QOS 2
+#define DISCOVERY_QOS 1
+#define OCCUPANCY_QOS 1
 #define DIRECTION_QOS 0
 #define PHOTOCELL_QOS 0
 
@@ -1379,7 +1379,7 @@ void task_climate_sense_publish(void *param)
 
 			// publish state for co2
 			sprintf(sensor_data, "%d", co2);
-			esp_mqtt_client_publish(client, esp_discovery_co2.state_topic, sensor_data, 0, 2, true);
+			esp_mqtt_client_publish(client, esp_discovery_co2.state_topic, sensor_data, 0, 1, true);
 
 			// publish state for voc
 			sprintf(sensor_data, "%d", voc_index);
@@ -1503,7 +1503,12 @@ static void mqtt_app_task(void *pvParameters)
 		.lwt_msg = STATUS_OFFLINE, /*!< LWT message (NULL by default) */
 		.lwt_qos = 1, /*!< LWT message qos */
 		.lwt_retain = true, /*!< LWT retained message flag */
-		.keepalive = 10 /*!< mqtt keepalive, default is 120 seconds */
+		.keepalive = 10, /*!< mqtt keepalive, default is 120 seconds */
+		// esp-mqtt resends an unacknowledged QoS 1/2 message after 1 s by
+		// default, so an acknowledgement delayed by Wi-Fi power save already
+		// produces duplicates. Three copies of one QoS 2 PUBLISH make
+		// mosquitto disconnect the client.
+		.message_retransmit_timeout = 10000,
 	};
 
 
